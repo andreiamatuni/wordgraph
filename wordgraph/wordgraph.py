@@ -16,7 +16,7 @@ class WordGraph(object):
         if words:
             self.words = words
 
-    def generate(self, simil_func="", threshold=0):
+    def generate(self, simil_func="", epsilon=0):
         """
         Generate the semantic graph given a similarity function and
         a similarity threshold.
@@ -25,6 +25,8 @@ class WordGraph(object):
         """
         if not self.words:
             raise ValueError("Initial lexicon not set. First set self.words")
+
+        self.sim_func_map[simil_func](self.model, epsilon, self.words)
 
 
     def to_pickle(self, path):
@@ -39,7 +41,6 @@ class WordGraph(object):
         self.model = vecmodel.VectorModel(vectors, vocab,
                                           vectors_path,
                                           vocab_path)
-
 
 
 

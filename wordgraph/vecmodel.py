@@ -20,6 +20,6 @@ class VectorModel(object):
         elif vectors_path and vocab_path:
             self.vectors = np.load(vectors)
             with open(vocab_path, "rU") as input:
-                self.dict = json.load(input)
+                self.vocab = json.load(input)
 
 
