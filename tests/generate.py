@@ -1,3 +1,7 @@
+import unittest
+
+import wordgraph as wg
+
 class TestGenerateGraph(unittest.TestCase):
     def test_generate(self):
         words = ["apple", "bear", "clown",
@@ -10,3 +14,5 @@ class TestGenerateGraph(unittest.TestCase):
         graph.generate('cos', 0.5)
         graph.to_pickle("test2_out")
 
+if __name__ == "__main__":
+    unittest.main()

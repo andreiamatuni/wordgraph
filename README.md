@@ -7,8 +7,8 @@ more details.
 
 ## usage
 
-
-
+See [this repo](https://github.com/andreiamatuni/wordgraph_notebook) for
+ipython notebooks showing usage.
 
 
 

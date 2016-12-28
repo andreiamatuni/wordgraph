@@ -1,5 +1,6 @@
 from . import simfunc
 from . import vecmodel
+from .load import *
 
 import json
 import pickle
@@ -43,13 +44,11 @@ class WordGraph(object):
         """
         Get the distribution of vertex degrees
 
-        :return: DataFrame with all the vertices' degrees
+        :return: Series with all the vertices' degrees
         """
-
-        dist = {'degree': [len(neighbors)
-                           for node, neighbors in self.graph.adjacency_iter()]}
-
-        return pd.DataFrame(dist)
+        degree_dist = self.graph.degree()
+        dist = pd.Series(degree_dist.values())
+        return dist
 
 
     def top_degree(self,  n=0, all=False):
@@ -95,6 +94,11 @@ class WordGraph(object):
             self.__dict__.update(temp_dict.__dict__)
 
 
+    def load_csv_words(self, path="", column=""):
+        df = pd.read_csv(path)
+        self.words = df[column].str.lower()
+
+
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path=""):
         """
@@ -106,30 +110,6 @@ class WordGraph(object):
         :param vocab_path: path to json formatted dictionary of
                             words to ndarray indices
         """
-
         self.model = vecmodel.VectorModel(vectors, vocab,
                                           vectors_path,
                                           vocab_path)
-
-
-def load_pickle(path):
-    """
-    Load a WordGraph object from a pickle file.
-
-    :param path: path to pickled WordGraph object
-    :return:
-    """
-    with open(path, 'r') as input:
-        return pickle.load(input)
-
-def load_json_graph(path):
-    G = nx.Graph()
-    with open(path, "rU") as input:
-        json_data = json.load(input)
-        for key, neighbors in json_data.items():
-            G.add_node(key, word=key, size=1)
-            if neighbors:
-                for neighb in neighbors:
-                    G.add_edge(key, neighb[0])
-    return G
-

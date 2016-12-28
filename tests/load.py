@@ -8,6 +8,7 @@ class TestLoadJson(unittest.TestCase):
         # graph = wg.WordGraph()
         # graph.load_pickle('test2_out')
         top = graph.top_degree(n=20)
+        degrees = graph.degree_ditribution()
 
         print(graph.nodes)
 
