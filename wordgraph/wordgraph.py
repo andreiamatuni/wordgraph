@@ -2,12 +2,12 @@ from . import simfunc
 from . import vecmodel
 from .load import *
 
-import json
-import pickle
+try:
+   import cPickle as pickle
+except:
+   import pickle
 
-import numpy as np
 import pandas as pd
-import networkx as nx
 
 class WordGraph(object):
     sim_func_map = simfunc.sim_func_map
@@ -30,7 +30,7 @@ class WordGraph(object):
         :param threshold:
         :param sim_func:
         """
-        if not self.words:
+        if self.words is None:
             raise ValueError("Initial lexicon not set. First set self.words")
 
         if simil_func not in self.sim_func_map:
@@ -75,7 +75,6 @@ class WordGraph(object):
         :param protocol: pickle protocol
         :return:
         """
-
         self.model = None
         with open(path, "wb") as out:
             pickle.dump(self, out, protocol)
@@ -89,14 +88,22 @@ class WordGraph(object):
         :param path: path to pickled WordGraph object
         :return:
         """
-        with open(path, 'r') as input:
+        with open(path, 'rb') as input:
             temp_dict = pickle.load(input)
             self.__dict__.update(temp_dict.__dict__)
 
 
     def load_csv_words(self, path="", column=""):
-        df = pd.read_csv(path)
-        self.words = df[column].str.lower()
+        """
+        Load your words from a csv file, given a column to
+        select from the file. This function assumes the
+        csv file is properly formatted.
+
+        :param path: path to csv file
+        :param column: the column with the words you want
+        :return:
+        """
+        self.words = pd.read_csv(path)[column].str.lower().dropna().unique()
 
 
     def load_vector_model(self, vectors=None, vocab=None,

@@ -1,4 +1,8 @@
-import pickle
+try:
+   import cPickle as pickle
+except:
+   import pickle
+
 import json
 
 import networkx as nx

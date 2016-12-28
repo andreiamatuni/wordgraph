@@ -4,7 +4,10 @@ import numpy as np
 def cosine_func(self, epsilon, words):
     G = nx.Graph()
     for index, word in enumerate(words):
-        G.add_node(word)
+        if word in self.vocab:
+            G.add_node(word)
+        else:
+            continue
         if index == len(words) - 1:
             continue
         neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])
