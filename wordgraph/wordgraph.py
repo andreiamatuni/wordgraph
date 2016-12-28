@@ -1,31 +1,45 @@
+from . import simfunc
+from . import vecmodel
+
 import json
 
 import numpy as np
 import networkx as nx
 
 class WordGraph(object):
-    def __init__(self, json_file=""):
+    sim_func_map = simfunc.sim_func_map
+
+    def __init__(self, json_file="", words=[]):
         if json_file:
             self.graph = load_json_graph(json_file)
+            self.words = None
+        if words:
+            self.words = words
+
+    def generate(self, simil_func="", threshold=0):
+        """
+        Generate the semantic graph given a similarity function and
+        a similarity threshold.
+        :param threshold:
+        :param sim_func:
+        """
+        if not self.words:
+            raise ValueError("Initial lexicon not set. First set self.words")
+
+
+    def to_pickle(self, path):
+        nx.write_gpickle(self.graph, path)
+
+    def load_pickle(self, path):
+        self.graph = nx.read_gpickle(path)
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path=""):
-        """
-        Load a word vector model.
 
-        :param vectors: numpy ndarray with the word vectors
-        :param vocab: dictionary of words to ndarray indices
-        :param vectors_path: path to npy file with word vectors
-        :param vocab_path: path to json formatted dictionary of
-                            words to ndarray indices
-        """
-        if vectors and vocab:
-            self.vectors = vectors
-            self.vocab = vocab
-        elif vectors_path and vocab_path:
-            self.vectors = np.load(vectors)
-            with open(vocab_path, "rU") as input:
-                self.dict = json.load(input)
+        self.model = vecmodel.VectorModel(vectors, vocab,
+                                          vectors_path,
+                                          vocab_path)
+
 
 
 
