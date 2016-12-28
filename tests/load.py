@@ -1,26 +1,16 @@
 import unittest
 
-import wordgraph
+import wordgraph as wg
 
 class TestLoadJson(unittest.TestCase):
     def test_load(self):
-        graph = wordgraph.WordGraph()
-        graph.load_pickle('test2_out')
+        graph = wg.WordGraph(json_file='data/semgraph_all')
+        # graph = wg.WordGraph()
+        # graph.load_pickle('test2_out')
+        top = graph.top_degree(n=20)
 
         print(graph.nodes)
 
-
-class TestGenerateGraph(unittest.TestCase):
-    def test_generate(self):
-        words = ["apple", "bear", "clown",
-                 "snow", "pool", "hummus",
-                 "grape", "sword", "bug",
-                 "python", "cup", "crown"]
-        graph = wordgraph.WordGraph(words=words)
-        graph.load_vector_model(vectors_path='/Volumes/External_1/code/semspace/data/model/vectors_glove_42b_300.npy',
-                                vocab_path='/Volumes/External_1/code/semspace/data/model/dict_glove_42b_300')
-        graph.generate('cos', 0.5)
-        graph.to_pickle("test2_out")
 
 
 

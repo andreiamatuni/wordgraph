@@ -5,6 +5,7 @@ import json
 import pickle
 
 import numpy as np
+import pandas as pd
 import networkx as nx
 
 class WordGraph(object):
@@ -19,6 +20,7 @@ class WordGraph(object):
             self.load_pickle(pickle_file)
         if words:
             self.words = words
+
 
     def generate(self, simil_func="", epsilon=0):
         """
@@ -37,6 +39,35 @@ class WordGraph(object):
         self.epsilon = epsilon
 
 
+    def degree_ditribution(self):
+        """
+        Get the distribution of vertex degrees
+
+        :return: DataFrame with all the vertices' degrees
+        """
+
+        dist = {'degree': [len(neighbors)
+                           for node, neighbors in self.graph.adjacency_iter()]}
+
+        return pd.DataFrame(dist)
+
+
+    def top_degree(self,  n=0, all=False):
+        """
+        Get the top N nodes in the graph by degree
+        :param n: number of top degree nodes to pull
+        :param all: return all of them
+        :return: DataFrame of word and degree, sorted by degree
+        """
+        degree_dist = self.graph.degree()
+        df = pd.DataFrame(data=degree_dist.items(), columns=['word', 'degree'])
+
+        if all:
+            return df
+        else:
+            return df.sort_values('degree', ascending=False)[:n]
+
+
     def to_pickle(self, path, protocol=pickle.HIGHEST_PROTOCOL):
         """
         Dump the WordGraph to a pickle file
@@ -50,6 +81,7 @@ class WordGraph(object):
         with open(path, "wb") as out:
             pickle.dump(self, out, protocol)
 
+
     def load_pickle(self, path):
         """
         Load a pickled WordGraph and update the current instance
@@ -61,6 +93,7 @@ class WordGraph(object):
         with open(path, 'r') as input:
             temp_dict = pickle.load(input)
             self.__dict__.update(temp_dict.__dict__)
+
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path=""):
