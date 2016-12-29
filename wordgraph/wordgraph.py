@@ -9,6 +9,8 @@ except:
 
 import pandas as pd
 
+import powerlaw
+
 
 class WordGraph(object):
     sim_func_map = simfunc.sim_func_map
@@ -66,6 +68,18 @@ class WordGraph(object):
             return df
         else:
             return df.sort_values('degree', ascending=False)[:n]
+
+
+    def fit_power_law(self, discrete=False, xmin=None, xmax=None,
+                      fit_method='Likelihood', estimate_discrete=True,
+                      discrete_approximation='round', sigma_threshold=None,
+                      parameter_range=None, fit_optimizer=None, xmin_distance='D',
+                      **kwargs):
+        args = locals()
+        del args['self']
+        degree_dist = self.degree_ditribution()
+        result = powerlaw.Fit(degree_dist['degree'], **args)
+        return result
 
 
     def to_pickle(self, path, protocol=pickle.HIGHEST_PROTOCOL):
