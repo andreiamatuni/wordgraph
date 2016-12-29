@@ -13,7 +13,7 @@ def cosine_func(self, epsilon, words):
         neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])
         if neighbors:
             for neighb in neighbors:
-                G.add_edge(word, neighb[0])
+                G.add_edge(word, neighb[0], {'cosine': neighb[1]})
     return G
 
 def cosine_neighbors(self, epsilon, word, corpus):

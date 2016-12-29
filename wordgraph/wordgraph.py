@@ -9,6 +9,7 @@ except:
 
 import pandas as pd
 
+
 class WordGraph(object):
     sim_func_map = simfunc.sim_func_map
 
@@ -19,7 +20,7 @@ class WordGraph(object):
             self.words = None
         elif pickle_file:
             self.load_pickle(pickle_file)
-        if words:
+        elif words:
             self.words = words
 
 
@@ -47,8 +48,8 @@ class WordGraph(object):
         :return: Series with all the vertices' degrees
         """
         degree_dist = self.graph.degree()
-        dist = pd.Series(degree_dist.values())
-        return dist
+        df = pd.DataFrame(list(degree_dist.items()), columns = ['word', 'degree'])
+        return df
 
 
     def top_degree(self,  n=0, all=False):
@@ -59,7 +60,7 @@ class WordGraph(object):
         :return: DataFrame of word and degree, sorted by degree
         """
         degree_dist = self.graph.degree()
-        df = pd.DataFrame(data=degree_dist.items(), columns=['word', 'degree'])
+        df = pd.DataFrame(data=list(degree_dist.items()), columns=['word', 'degree'])
 
         if all:
             return df
