@@ -8,7 +8,8 @@ class VectorModel(object):
     sim_func_map = simfunc.sim_func_map
 
     def __init__(self, vectors=None, vocab=None,
-                          vectors_path="", vocab_path=""):
+                 vectors_path="", vocab_path="",
+                 rand=False, n=0, m=0):
         """
         Load a word vector model.
 
@@ -25,3 +26,28 @@ class VectorModel(object):
             self.vectors = np.load(vectors_path)
             with open(vocab_path, "rU") as input:
                 self.vocab = json.load(input)
+        elif rand:
+            self.rand_unif_dist(n, m)
+
+    def rand_unif_dist(self, n, m):
+        self.vectors = np.zeros((m,n))
+        for i in range(m):
+            x = np.random.normal(0, 1, n)
+            W = np.sum(x**2)
+            self.vectors[i] = x/W**(1/2)
+        self.vocab = dict((i, i) for i in range(m))
+
+
+def normalize_vectors(input, output):
+    vectors = np.load(input)
+
+    for x in range(vectors.shape[0]):
+        vector = vectors[x, :]
+        unit_vec = np.zeros(vector.shape)
+        d1 = np.linalg.norm(vector)
+        unit_vec = (vector.T / d1).T
+        vectors[x, :] = unit_vec
+
+    np.save(output, vectors)
+
+

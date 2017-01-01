@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 
 
-def cosine_func(self, epsilon, words):
+def cosine_func(self, epsilon, words, unit=False):
     G = nx.Graph()
     for index, word in enumerate(words):
         if word in self.vocab:
@@ -11,7 +11,10 @@ def cosine_func(self, epsilon, words):
             continue
         if index == len(words) - 1:
             continue
-        neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])
+        if unit:
+            neighbors = cosine_neighbors_unit(self, epsilon, word, words[index + 1:])
+        else:
+            neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])
         if neighbors:
             for neighb in neighbors:
                 G.add_edge(word, neighb[0], {'cosine': neighb[1]})
@@ -40,6 +43,25 @@ def cosine_neighbors(self, epsilon, word, corpus):
             w2_vec_norm = (w2_vector.T / d2).T
 
             cosine = np.dot(w1_vec_norm.T, w2_vec_norm.T)
+
+            if 1 - cosine <= epsilon:
+                neighbors.append((corp_word, cosine))
+    return neighbors
+
+def cosine_neighbors_unit(self, epsilon, word, corpus):
+    if word not in self.vocab:
+        return None
+    else:
+        w1_vector = self.vectors[self.vocab[word], :]
+        neighbors = []
+
+    for corp_word in corpus:
+        if corp_word == word:
+            continue
+        if corp_word in self.vocab:
+            w2_vector = self.vectors[self.vocab[corp_word], :]
+
+            cosine = np.dot(w1_vector, w2_vector)
 
             if 1 - cosine <= epsilon:
                 neighbors.append((corp_word, cosine))

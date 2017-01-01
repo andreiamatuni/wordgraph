@@ -1,6 +1,8 @@
 from . import simfunc
 from . import vecmodel
-from .load import *
+from . import write
+from . import load
+
 
 try:
    import cPickle as pickle
@@ -11,14 +13,16 @@ import pandas as pd
 
 import powerlaw
 
+temp_model = None
 
 class WordGraph(object):
     sim_func_map = simfunc.sim_func_map
+    generate_range_write = write.generate_range
 
     def __init__(self, json_file="", pickle_file="",
                  words=[]):
         if json_file:
-            self.graph = load_json_graph(json_file)
+            self.graph = load.load_json_graph(json_file)
             self.words = None
         elif pickle_file:
             self.load_pickle(pickle_file)
@@ -26,22 +30,36 @@ class WordGraph(object):
             self.words = words
 
 
-    def generate(self, simil_func="", epsilon=0):
+    def generate(self, simil_func="", epsilon=0, unit=False):
         """
         Generate the semantic graph given a similarity function and
         a similarity threshold.
         :param threshold:
         :param sim_func:
         """
-        if self.words is None:
+        if self.words is None and not self.model:
             raise ValueError("Initial lexicon not set. First set self.words")
 
         if simil_func not in self.sim_func_map:
             raise ValueError("Unknown similarity function: {}".format(simil_func))
 
-        self.graph = self.sim_func_map[simil_func](self.model, epsilon, self.words)
+        self.graph = self.sim_func_map[simil_func](self.model, epsilon, self.words, unit)
         self.epsilon = epsilon
 
+    def generate_all(self, simil_func="", epsilon=0, unit=False):
+        """
+        Generate the semantic graph given a similarity function and
+        a similarity threshold.
+        :param threshold: similarity threshold
+        :param sim_func:
+        """
+
+        if simil_func not in self.sim_func_map:
+            raise ValueError("Unknown similarity function: {}".format(simil_func))
+
+        words = list(self.model.vocab.keys())
+        self.graph = self.sim_func_map[simil_func](self.model, epsilon, words, unit)
+        self.epsilon = epsilon
 
     def degree_ditribution(self):
         """
@@ -52,6 +70,10 @@ class WordGraph(object):
         degree_dist = self.graph.degree()
         df = pd.DataFrame(list(degree_dist.items()), columns = ['word', 'degree'])
         return df
+
+    def simil_distribution(self):
+        edges = self.graph.edges()
+        return [self.graph.edge[x][y]['cosine'] for x, y in edges]
 
 
     def top_degree(self,  n=0, all=False):
@@ -90,9 +112,12 @@ class WordGraph(object):
         :param protocol: pickle protocol
         :return:
         """
+        temp_model = self.model
         self.model = None
         with open(path, "wb") as out:
             pickle.dump(self, out, protocol)
+        self.model = temp_model
+        temp_model = None
 
 
     def load_pickle(self, path):
@@ -122,7 +147,8 @@ class WordGraph(object):
 
 
     def load_vector_model(self, vectors=None, vocab=None,
-                          vectors_path="", vocab_path=""):
+                          vectors_path="", vocab_path="",
+                          rand=False, n=0, m=0):
         """
         Load a word vector model. It will be set to self.model
 
@@ -134,4 +160,5 @@ class WordGraph(object):
         """
         self.model = vecmodel.VectorModel(vectors, vocab,
                                           vectors_path,
-                                          vocab_path)
+                                          vocab_path,
+                                          rand, n, m)
