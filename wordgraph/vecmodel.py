@@ -9,7 +9,7 @@ class VectorModel(object):
 
     def __init__(self, vectors=None, vocab=None,
                  vectors_path="", vocab_path="",
-                 rand=False, n=0, m=0):
+                 rand=False, n=0, m=0, unit=False):
         """
         Load a word vector model.
 
@@ -28,6 +28,8 @@ class VectorModel(object):
                 self.vocab = json.load(input)
         elif rand:
             self.rand_unif_dist(n, m)
+
+        self.unit = unit
 
     def rand_unif_dist(self, n, m):
         self.vectors = np.zeros((m,n))

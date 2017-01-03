@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 
 
-def cosine_func(self, epsilon, words, unit=False):
+def cosine_func(self, epsilon, words):
     G = nx.Graph()
     for index, word in enumerate(words):
         if word in self.vocab:
@@ -11,7 +11,7 @@ def cosine_func(self, epsilon, words, unit=False):
             continue
         if index == len(words) - 1:
             continue
-        if unit:
+        if self.unit:
             neighbors = cosine_neighbors_unit(self, epsilon, word, words[index + 1:])
         else:
             neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])

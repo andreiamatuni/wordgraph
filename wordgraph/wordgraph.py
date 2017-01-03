@@ -30,12 +30,12 @@ class WordGraph(object):
             self.words = words
 
 
-    def generate(self, simil_func="", epsilon=0, unit=False):
+    def generate(self, simil_func="", epsilon=0):
         """
         Generate the semantic graph given a similarity function and
         a similarity threshold.
-        :param threshold:
-        :param sim_func:
+        :param epsilon: similarity threshold
+        :param sim_func: similarity function
         """
         if self.words is None and not self.model:
             raise ValueError("Initial lexicon not set. First set self.words")
@@ -43,10 +43,10 @@ class WordGraph(object):
         if simil_func not in self.sim_func_map:
             raise ValueError("Unknown similarity function: {}".format(simil_func))
 
-        self.graph = self.sim_func_map[simil_func](self.model, epsilon, self.words, unit)
+        self.graph = self.sim_func_map[simil_func](self.model, epsilon, self.words)
         self.epsilon = epsilon
 
-    def generate_all(self, simil_func="", epsilon=0, unit=False):
+    def generate_all(self, simil_func="", epsilon=0):
         """
         Generate the semantic graph given a similarity function and
         a similarity threshold.
@@ -58,10 +58,10 @@ class WordGraph(object):
             raise ValueError("Unknown similarity function: {}".format(simil_func))
 
         words = list(self.model.vocab.keys())
-        self.graph = self.sim_func_map[simil_func](self.model, epsilon, words, unit)
+        self.graph = self.sim_func_map[simil_func](self.model, epsilon, words)
         self.epsilon = epsilon
 
-    def degree_ditribution(self):
+    def degree_distribution(self):
         """
         Get the distribution of vertex degrees
 
@@ -99,7 +99,7 @@ class WordGraph(object):
                       **kwargs):
         args = locals()
         del args['self']
-        degree_dist = self.degree_ditribution()
+        degree_dist = self.degree_distribution()
         result = powerlaw.Fit(degree_dist['degree'], **args)
         return result
 
@@ -148,7 +148,7 @@ class WordGraph(object):
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path="",
-                          rand=False, n=0, m=0):
+                          rand=False, n=0, m=0, unit=False):
         """
         Load a word vector model. It will be set to self.model
 
@@ -161,4 +161,12 @@ class WordGraph(object):
         self.model = vecmodel.VectorModel(vectors, vocab,
                                           vectors_path,
                                           vocab_path,
-                                          rand, n, m)
+                                          rand, n, m, unit)
+
+    def unload_vector_model(self):
+        """
+        Unload the word vectors and dictionary. Useful for
+        reducing RAM usage.
+        :return:
+        """
+        self.model = None
