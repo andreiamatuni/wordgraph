@@ -100,7 +100,7 @@ class WordGraph(object):
         args = locals()
         del args['self']
         degree_dist = self.degree_distribution()
-        result = powerlaw.Fit(degree_dist['degree'], **args)
+        result = powerlaw.Fit(degree_dist['degree'] + 1, **args)
         return result
 
 
@@ -143,7 +143,8 @@ class WordGraph(object):
         :param column: the column with the words you want
         :return:
         """
-        self.words = pd.read_csv(path)[column].str.lower().dropna().unique()
+        self.words = pd.read_csv(path)[column].str.replace("+", "-")\
+            .str.replace(" ", "-").str.lower().dropna().unique()
 
 
     def load_vector_model(self, vectors=None, vocab=None,
