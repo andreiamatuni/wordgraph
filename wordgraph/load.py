@@ -7,17 +7,17 @@ import json
 
 import networkx as nx
 
-def load_pickle(path):
+def pickled(path):
     """
     Load a WordGraph object from a pickle file.
 
     :param path: path to pickled WordGraph object
     :return:
     """
-    with open(path, 'r') as input:
+    with open(path, 'rb') as input:
         return pickle.load(input)
 
-def load_json_graph(path):
+def json_graph(path):
     G = nx.Graph()
     with open(path, "rU") as input:
         json_data = json.load(input)

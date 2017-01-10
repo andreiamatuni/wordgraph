@@ -10,6 +10,7 @@ except:
    import pickle
 
 import pandas as pd
+import networkx as nx
 
 import powerlaw
 
@@ -146,6 +147,9 @@ class WordGraph(object):
         self.words = pd.read_csv(path)[column].str.replace("+", "-")\
             .str.replace(" ", "-").str.lower().dropna().unique()
 
+    def load_words(self, words):
+        self.words = words
+
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path="",
@@ -163,6 +167,31 @@ class WordGraph(object):
                                           vectors_path,
                                           vocab_path,
                                           rand, n, m, unit)
+
+    def average_shortest_path(self):
+        """
+        Get the average shortest path length of the largest
+        connected subgraph.
+        :return: avg. shortest path length
+        """
+        if self.graph is not None:
+            largest = sorted(nx.connected_components(self.graph),
+                             key=len, reverse=True)[0]
+            subgraph = self.graph.subgraph(largest)
+            return nx.average_shortest_path_length(subgraph)
+
+    def average_clustering(self):
+        """
+        Get the clustering coefficient for the largest connected
+        subgraph
+        :return:
+        """
+        if self.graph is not None:
+            largest = sorted(nx.connected_components(self.graph),
+                             key=len, reverse=True)[0]
+            subgraph = self.graph.subgraph(largest)
+            return nx.average_clustering(subgraph)
+
 
     def unload_vector_model(self):
         """

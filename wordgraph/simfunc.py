@@ -44,16 +44,13 @@ def cosine_neighbors(self, epsilon, word, corpus):
 
             cosine = np.dot(w1_vec_norm.T, w2_vec_norm.T)
 
-            if 1 - cosine <= epsilon:
+            if cosine >= epsilon:
                 neighbors.append((corp_word, cosine))
     return neighbors
 
 def cosine_neighbors_unit(self, epsilon, word, corpus):
-    if word not in self.vocab:
-        return None
-    else:
-        w1_vector = self.vectors[self.vocab[word], :]
-        neighbors = []
+    w1_vector = self.vectors[self.vocab[word], :]
+    neighbors = []
 
     for corp_word in corpus:
         if corp_word == word:
@@ -63,7 +60,7 @@ def cosine_neighbors_unit(self, epsilon, word, corpus):
 
             cosine = np.dot(w1_vector, w2_vector)
 
-            if 1 - cosine <= epsilon:
+            if cosine >= epsilon:
                 neighbors.append((corp_word, cosine))
     return neighbors
 
@@ -84,11 +81,8 @@ def euclid_func(self, epsilon, words):
     return G
 
 def euclid_neighbors(self, epsilon, word, corpus):
-    if word not in self.vocab:
-        return None
-    else:
-        w1_vector = self.vectors[self.vocab[word], :]
-        neighbors = []
+    w1_vector = self.vectors[self.vocab[word], :]
+    neighbors = []
 
     for corp_word in corpus:
         if corp_word == word:
