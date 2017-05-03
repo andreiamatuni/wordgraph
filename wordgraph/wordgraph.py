@@ -144,11 +144,15 @@ class WordGraph(object):
         :param column: the column with the words you want
         :return:
         """
-        self.words = pd.read_csv(path)[column].str.replace("+", "-")\
+        self.words = pd.read_csv(path)[column].str.strip().str.replace("+", "-")\
             .str.replace(" ", "-").str.lower().dropna().unique()
 
-    def load_words(self, words):
-        self.words = words
+    def load_words(self, words, column=''):
+        if column:
+            self.words = words[column].str.replace("+", "-")\
+                .str.replace(" ", "-").str.lower().dropna().unique()
+        else:
+            self.words = words
 
 
     def load_vector_model(self, vectors=None, vocab=None,

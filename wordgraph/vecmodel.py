@@ -52,4 +52,22 @@ def normalize_vectors(input, output):
 
     np.save(output, vectors)
 
-
+def glove_to_numpy(input):
+    with open(input, "rU") as glove_file:
+        vocab = {}
+        n = 0
+        dim = 0
+        for line in glove_file:
+            if n == 0:
+                dim = len(line.split()[1:])
+            n += 1
+        glove_file.seek(0)
+        print(dim)
+        vectors = np.zeros((n, dim), dtype=np.float32)
+        print(vectors.shape)
+        for i, line in enumerate(glove_file):
+            split_line = line.split()
+            vocab[split_line[0]] = i
+            vec = [float(x) for x in split_line[1:]]
+            vectors[i,:] = np.array(vec)
+    return vocab, vectors
