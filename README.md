@@ -11,6 +11,13 @@ See [this repo](https://github.com/andreiamatuni/wordgraph_notebook) for
 ipython notebooks showing usage.
 
 
+### dependencies
+
+This library makes use of:
+
+Jeff Alstott, Ed Bullmore, Dietmar Plenz. (2014). powerlaw: a Python package for analysis of heavy-tailed distributions. [PLoS ONE 9(1): e85777](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0085777)
+
+Aric A. Hagberg, Daniel A. Schult and Pieter J. Swart, [“Exploring network structure, dynamics, and function using NetworkX”](http://conference.scipy.org/proceedings/SciPy2008/paper_2/), in [Proceedings of the 7th Python in Science Conference (SciPy2008)](http://conference.scipy.org/proceedings/SciPy2008/index.html), Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp. 11–15, Aug 2008
 
 
 #### references

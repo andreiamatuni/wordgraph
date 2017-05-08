@@ -4,10 +4,8 @@ import numpy as np
 
 def generate_range(self, output_dir, simil_func="",
                    start=0, end=0, step=0):
-
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
-
     for x in np.arange(start=start, stop=end, step=step):
         self.generate(simil_func=simil_func, epsilon=x)
         output_name = "{}_{}".format(simil_func, str(x))

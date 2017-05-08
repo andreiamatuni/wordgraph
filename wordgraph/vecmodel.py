@@ -52,7 +52,8 @@ def normalize_vectors(input, output):
 
     np.save(output, vectors)
 
-def glove_to_numpy(input):
+
+def glove_to_numpy(input, vec_out, vocab_out):
     with open(input, "rU") as glove_file:
         vocab = {}
         n = 0
@@ -70,4 +71,7 @@ def glove_to_numpy(input):
             vocab[split_line[0]] = i
             vec = [float(x) for x in split_line[1:]]
             vectors[i,:] = np.array(vec)
+    np.save(vec_out, vectors)
+    with open(vocab_out, "wb") as out:
+        json.dump(vocab, out)
     return vocab, vectors
