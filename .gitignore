@@ -5,3 +5,4 @@ tests/output
 .ropeproject
 wordgraph/__pycache__
 wordgraph.egg-info
+*.pyc

@@ -4,6 +4,7 @@ import numpy as np
 
 from . import simfunc
 
+
 class VectorModel(object):
     sim_func_map = simfunc.sim_func_map
 
@@ -32,11 +33,11 @@ class VectorModel(object):
         self.unit = unit
 
     def rand_unif_dist(self, n, m):
-        self.vectors = np.zeros((m,n))
+        self.vectors = np.zeros((m, n))
         for i in range(m):
             x = np.random.normal(0, 1, n)
             W = np.sum(x**2)
-            self.vectors[i] = x/W**(1/2)
+            self.vectors[i] = x / W**(1 / 2)
         self.vocab = dict((i, i) for i in range(m))
 
 
@@ -70,7 +71,7 @@ def glove_to_numpy(input, vec_out, vocab_out):
             split_line = line.split()
             vocab[split_line[0]] = i
             vec = [float(x) for x in split_line[1:]]
-            vectors[i,:] = np.array(vec)
+            vectors[i, :] = np.array(vec)
     np.save(vec_out, vectors)
     with open(vocab_out, "wb") as out:
         json.dump(vocab, out)

@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+from scipy.spatial.distance import cosine
 
 
 def cosine_func(self, epsilon, words):
@@ -12,9 +13,11 @@ def cosine_func(self, epsilon, words):
         if index == len(words) - 1:
             continue
         if self.unit:
-            neighbors = cosine_neighbors_unit(self, epsilon, word, words[index + 1:])
+            neighbors = cosine_neighbors_unit(
+                self, epsilon, word, words[index + 1:])
         else:
-            neighbors = cosine_neighbors(self, epsilon, word, words[index + 1:])
+            neighbors = cosine_neighbors(
+                self, epsilon, word, words[index + 1:])
         if neighbors:
             for neighb in neighbors:
                 G.add_edge(word, neighb[0], {'cosine': neighb[1]})
@@ -32,21 +35,14 @@ def cosine_neighbors(self, epsilon, word, corpus):
         if corp_word == word:
             continue
         if corp_word in self.vocab:
-            w2_vector = self.vectors[self.vocab[corp_word], :]
 
-            w1_vec_norm = np.zeros(w1_vector.shape)
-            d1 = (np.sum(w1_vector ** 2, ) ** (0.5))
-            w1_vec_norm = (w1_vector.T / d1).T
+            d = cosine(w1_vector,
+                       self.vectors[self.vocab[corp_word], :])
 
-            w2_vec_norm = np.zeros(w2_vector.shape)
-            d2 = (np.sum(w2_vector ** 2, ) ** (0.5))
-            w2_vec_norm = (w2_vector.T / d2).T
-
-            cosine = np.dot(w1_vec_norm.T, w2_vec_norm.T)
-
-            if cosine >= epsilon:
-                neighbors.append((corp_word, cosine))
+            if d <= epsilon:
+                neighbors.append((corp_word, d))
     return neighbors
+
 
 def cosine_neighbors_unit(self, epsilon, word, corpus):
     w1_vector = self.vectors[self.vocab[word], :]
@@ -56,11 +52,10 @@ def cosine_neighbors_unit(self, epsilon, word, corpus):
         if corp_word == word:
             continue
         if corp_word in self.vocab:
-            w2_vector = self.vectors[self.vocab[corp_word], :]
 
-            cosine = np.dot(w1_vector, w2_vector)
+            d = 1 - np.dot(w1_vector, self.vectors[self.vocab[corp_word], :])
 
-            if cosine >= epsilon:
+            if d <= epsilon:
                 neighbors.append((corp_word, cosine))
     return neighbors
 
@@ -79,6 +74,7 @@ def euclid_func(self, epsilon, words):
             for neighb in neighbors:
                 G.add_edge(word, neighb[0], {'cosine': neighb[1]})
     return G
+
 
 def euclid_neighbors(self, epsilon, word, corpus):
     w1_vector = self.vectors[self.vocab[word], :]
@@ -121,6 +117,7 @@ def dotprod_func(self, epsilon, words):
             for neighb in neighbors:
                 G.add_edge(word, neighb[0], {'dotprod': neighb[1]})
     return G
+
 
 def dotprod_neighbors(self, epsilon, word, corpus):
     if word not in self.vocab:
