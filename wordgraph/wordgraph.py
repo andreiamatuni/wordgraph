@@ -5,9 +5,9 @@ from . import load
 
 
 try:
-   import cPickle as pickle
+    import cPickle as pickle
 except:
-   import pickle
+    import pickle
 
 import pandas as pd
 import networkx as nx
@@ -15,6 +15,7 @@ import networkx as nx
 import powerlaw
 
 temp_model = None
+
 
 class WordGraph(object):
     sim_func_map = simfunc.sim_func_map
@@ -30,7 +31,6 @@ class WordGraph(object):
         elif words:
             self.words = words
 
-
     def generate(self, simil_func="", epsilon=0):
         """
         Generate the semantic graph given a similarity function and
@@ -42,9 +42,11 @@ class WordGraph(object):
             raise ValueError("Initial lexicon not set. First set self.words")
 
         if simil_func not in self.sim_func_map:
-            raise ValueError("Unknown similarity function: {}".format(simil_func))
+            raise ValueError(
+                "Unknown similarity function: {}".format(simil_func))
 
-        self.graph = self.sim_func_map[simil_func](self.model, epsilon, self.words)
+        self.graph = self.sim_func_map[simil_func](
+            self.model, epsilon, self.words)
         self.epsilon = epsilon
 
     def generate_all(self, simil_func="", epsilon=0):
@@ -56,7 +58,8 @@ class WordGraph(object):
         """
 
         if simil_func not in self.sim_func_map:
-            raise ValueError("Unknown similarity function: {}".format(simil_func))
+            raise ValueError(
+                "Unknown similarity function: {}".format(simil_func))
 
         words = list(self.model.vocab.keys())
         self.graph = self.sim_func_map[simil_func](self.model, epsilon, words)
@@ -69,13 +72,13 @@ class WordGraph(object):
         :return: Series with all the vertices' degrees
         """
         degree_dist = self.graph.degree()
-        df = pd.DataFrame(list(degree_dist.items()), columns = ['word', 'degree'])
+        df = pd.DataFrame(list(degree_dist.items()),
+                          columns=['word', 'degree'])
         return df
 
     def simil_distribution(self):
         edges = self.graph.edges()
         return [self.graph.edge[x][y]['cosine'] for x, y in edges]
-
 
     def top_degree(self,  n=0, all=False):
         """
@@ -85,13 +88,13 @@ class WordGraph(object):
         :return: DataFrame of word and degree, sorted by degree
         """
         degree_dist = self.graph.degree()
-        df = pd.DataFrame(data=list(degree_dist.items()), columns=['word', 'degree'])
+        df = pd.DataFrame(data=list(degree_dist.items()),
+                          columns=['word', 'degree'])
 
         if all:
             return df
         else:
             return df.sort_values('degree', ascending=False)[:n]
-
 
     def fit_power_law(self, discrete=False, xmin=None, xmax=None,
                       fit_method='Likelihood', estimate_discrete=True,
@@ -103,7 +106,6 @@ class WordGraph(object):
         degree_dist = self.degree_distribution()
         result = powerlaw.Fit(degree_dist['degree'] + 1, **args)
         return result
-
 
     def to_pickle(self, path, protocol=pickle.HIGHEST_PROTOCOL):
         """
@@ -120,7 +122,6 @@ class WordGraph(object):
         self.model = temp_model
         temp_model = None
 
-
     def load_pickle(self, path):
         """
         Load a pickled WordGraph and update the current instance
@@ -133,7 +134,6 @@ class WordGraph(object):
             temp_dict = pickle.load(input)
             self.__dict__.update(temp_dict.__dict__)
 
-
     def load_csv_words(self, path="", column=""):
         """
         Load your words from a csv file, given a column to
@@ -144,7 +144,8 @@ class WordGraph(object):
         :param column: the column with the words you want
         :return:
         """
-        self.words = pd.read_csv(path)[column].str.strip().str.replace("+", "-")\
+        self.words = pd.read_csv(path, low_memory=False)[column]\
+            .str.strip().str.replace("+", "-")\
             .str.replace(" ", "-").str.lower().dropna().unique()
 
     def load_words(self, words, column=''):
@@ -153,7 +154,6 @@ class WordGraph(object):
                 .str.replace(" ", "-").str.lower().dropna().unique()
         else:
             self.words = words
-
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path="",
@@ -195,7 +195,6 @@ class WordGraph(object):
                              key=len, reverse=True)[0]
             subgraph = self.graph.subgraph(largest)
             return nx.average_clustering(subgraph)
-
 
     def unload_vector_model(self):
         """

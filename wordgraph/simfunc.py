@@ -1,47 +1,58 @@
 import networkx as nx
 import numpy as np
 from scipy.spatial.distance import cosine
+from numpy import linalg as la
+from timeit import default_timer as timer
 
 
 def cosine_func(self, epsilon, words):
     G = nx.Graph()
-    for index, word in enumerate(words):
+    for idx, word in enumerate(words):
         if word in self.vocab:
             G.add_node(word)
         else:
             continue
-        if index == len(words) - 1:
+        if idx == len(words) - 1:
             continue
         if self.unit:
             neighbors = cosine_neighbors_unit(
-                self, epsilon, word, words[index + 1:])
+                self, epsilon, word, words[idx + 1:])
         else:
-            neighbors = cosine_neighbors(
-                self, epsilon, word, words[index + 1:])
-        if neighbors:
-            for neighb in neighbors:
-                G.add_edge(word, neighb[0], {'cosine': neighb[1]})
+            w1_vector = self.vectors[self.vocab[word], :]
+
+            for corp_word in words[idx + 1:]:
+                if corp_word == word:
+                    continue
+                if corp_word in self.vocab:
+
+                    d = 1 - np.dot(w1_vector, self.vectors[self.vocab[corp_word], :])\
+                        / (la.norm(w1_vector) * la.norm(self.vectors[self.vocab[corp_word], :]))
+
+                    if d <= epsilon:
+                        G.add_edge(word, corp_word, cosine=d)
+
     return G
 
 
-def cosine_neighbors(self, epsilon, word, corpus):
+def cosine_neighbors(self, epsilon, word, corpus, G):
     if word not in self.vocab:
         return None
     else:
         w1_vector = self.vectors[self.vocab[word], :]
-        neighbors = []
 
     for corp_word in corpus:
         if corp_word == word:
             continue
         if corp_word in self.vocab:
 
-            d = cosine(w1_vector,
-                       self.vectors[self.vocab[corp_word], :])
+            d = 1 - np.dot(w1_vector, self.vectors[self.vocab[corp_word], :])\
+                / (la.norm(w1_vector) * la.norm(self.vectors[self.vocab[corp_word], :]))
+
+            # d = cosine(w1_vector,
+            #            self.vectors[self.vocab[corp_word], :])
 
             if d <= epsilon:
-                neighbors.append((corp_word, d))
-    return neighbors
+                G.add_edge(word, corp_word, cosine=d)
 
 
 def cosine_neighbors_unit(self, epsilon, word, corpus):

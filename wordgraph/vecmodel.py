@@ -25,7 +25,7 @@ class VectorModel(object):
             self.vocab = vocab
         elif vectors_path and vocab_path:
             self.vectors = np.load(vectors_path)
-            with open(vocab_path, "rU") as input:
+            with open(vocab_path, "r") as input:
                 self.vocab = json.load(input)
         elif rand:
             self.rand_unif_dist(n, m)
