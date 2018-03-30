@@ -72,7 +72,7 @@ class WordGraph(object):
         :return: Series with all the vertices' degrees
         """
         degree_dist = self.graph.degree()
-        df = pd.DataFrame(list(degree_dist.items()),
+        df = pd.DataFrame([(x, y) for x, y in dict(degree_dist).items()],
                           columns=['word', 'degree'])
         return df
 
@@ -88,7 +88,7 @@ class WordGraph(object):
         :return: DataFrame of word and degree, sorted by degree
         """
         degree_dist = self.graph.degree()
-        df = pd.DataFrame(data=list(degree_dist.items()),
+        df = pd.DataFrame([(x, y) for x, y in dict(degree_dist).items()],
                           columns=['word', 'degree'])
 
         if all:

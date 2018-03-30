@@ -1,13 +1,16 @@
 try:
-   import cPickle as pickle
+    import cPickle as pickle
 except:
-   import pickle
+    import pickle
 
 import json
 
 import networkx as nx
 
-def pickled(path):
+from . import wordgraph as wg
+
+
+def load_pickle(path):
     """
     Load a WordGraph object from a pickle file.
 
@@ -15,7 +18,10 @@ def pickled(path):
     :return:
     """
     with open(path, 'rb') as input:
+        # G = wg.WordGraph()
+
         return pickle.load(input)
+
 
 def json_graph(path):
     G = nx.Graph()

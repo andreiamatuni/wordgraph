@@ -48,9 +48,6 @@ def cosine_neighbors(self, epsilon, word, corpus, G):
             d = 1 - np.dot(w1_vector, self.vectors[self.vocab[corp_word], :])\
                 / (la.norm(w1_vector) * la.norm(self.vectors[self.vocab[corp_word], :]))
 
-            # d = cosine(w1_vector,
-            #            self.vectors[self.vocab[corp_word], :])
-
             if d <= epsilon:
                 G.add_edge(word, corp_word, cosine=d)
 
