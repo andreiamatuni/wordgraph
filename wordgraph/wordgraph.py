@@ -11,8 +11,9 @@ except:
 
 import pandas as pd
 import networkx as nx
-
+import numpy as np
 import powerlaw
+import scipy
 
 temp_model = None
 
@@ -22,14 +23,20 @@ class WordGraph(object):
     generate_range_write = write.generate_range
 
     def __init__(self, json_file="", pickle_file="",
-                 words=[]):
+                 words=[], graph=None):
         if json_file:
             self.graph = load.load_json_graph(json_file)
-            self.words = None
+            self._words = None
         elif pickle_file:
             self.load_pickle(pickle_file)
         elif words:
-            self.words = words
+            self._words = words
+        elif graph:
+            self._words = list(graph.nodes)
+            self.graph = graph
+
+    def words(self):
+        return list(self.graph.nodes)
 
     def generate(self, simil_func="", epsilon=0):
         """
@@ -38,15 +45,16 @@ class WordGraph(object):
         :param epsilon: similarity threshold
         :param sim_func: similarity function
         """
-        if self.words is None and not self.model:
-            raise ValueError("Initial lexicon not set. First set self.words")
+        if self._words is None and not self.model:
+            raise ValueError("Initial lexicon not set. First set self._words")
 
         if simil_func not in self.sim_func_map:
             raise ValueError(
                 "Unknown similarity function: {}".format(simil_func))
 
         self.graph = self.sim_func_map[simil_func](
-            self.model, epsilon, self.words)
+            self.model, epsilon, self._words)
+        self._words = list(self.graph.nodes)
         self.epsilon = epsilon
 
     def generate_all(self, simil_func="", epsilon=0):
@@ -144,16 +152,16 @@ class WordGraph(object):
         :param column: the column with the words you want
         :return:
         """
-        self.words = pd.read_csv(path, low_memory=False)[column]\
+        self._words = pd.read_csv(path, low_memory=False)[column]\
             .str.strip().str.replace("+", "-")\
             .str.replace(" ", "-").str.lower().dropna().unique()
 
     def load_words(self, words, column=''):
         if column:
-            self.words = words[column].str.replace("+", "-")\
+            self._words = words[column].str.replace("+", "-")\
                 .str.replace(" ", "-").str.lower().dropna().unique()
         else:
-            self.words = words
+            self._words = words
 
     def load_vector_model(self, vectors=None, vocab=None,
                           vectors_path="", vocab_path="",
@@ -196,6 +204,85 @@ class WordGraph(object):
             subgraph = self.graph.subgraph(largest)
             return nx.average_clustering(subgraph)
 
+    def conductance(self, words):
+        return nx.algorithms.conductance(self.graph, words)
+
+    def adj_matrix(self, subgraph=None):
+        """
+        Return the adjacency matrix for the graph.
+
+        :param subgraph: only return adjacency matrix for 
+                         a subgraph specified by these specific nodes
+        """
+        if subgraph is not None:
+            g = self.graph.subgraph(subgraph)
+            return nx.linalg.adj_matrix(g), list(g.nodes)
+        return nx.linalg.adj_matrix(self.graph), list(self.graph.nodes)
+
+    def trans_matrix(self, subgraph=None):
+        """
+        Return the transition probability matrix associated to
+        this graph, assuming a uniform distribution for all out-degrees
+        for all vertices
+        """
+        A, words = self.adj_matrix(subgraph=subgraph)
+        return adj_to_trans(A), words
+
+    def eigen(self, subgraph=None):
+        """
+        Return the eigenvalues and eigenvectors of the graph
+
+        :param subgraph: only look at specified subgraph (list of nodes)
+        """
+        P, words = self.trans_matrix(subgraph=subgraph)
+        w, v = scipy.linalg.eig(P, left=True, right=False)
+        return w, v, words
+
+    def spectral_gap(self, subgraph=None):
+        w, v = self.eigen(subgraph=subgraph)
+        w = np.apply_along_axis(lambda x: abs(x), 0, w)
+        idx = w.argsort()[::-1]
+        w = w[idx]
+        return w[0] - w[1]
+
+    def subgraph(self, nodes):
+        g = self.graph.subgraph(nodes)
+        G = WordGraph()
+        G.graph = g
+        G._words = list(nodes)
+        return G
+
+    def max_connected_component(self):
+        nodes = max(nx.connected_components(self.graph), key=len)
+        return self.subgraph(nodes)
+
+    def max_connected_nodes(self):
+        return max(nx.connected_components(self.graph), key=len)
+
+    def pi(self, x, p=None):
+        """
+        Return probability of being at word x under the stationary 
+        distribution for Markov chain with uniform transition probability 
+        matrix. The ordering in pi(x) is such that indexes correspond to 
+        their ordering in self.graph.nodes
+
+        :param x: word for which you want pi(x)
+        :param p: the stationary distribution vector (computed if not provided)
+        """
+        if p is None:
+            p = self.stationary_distribution()
+
+        i = list(self.graph.nodes).index(x)
+        return p[i]
+
+    def stationary_distribution(self):
+        vals, vecs, words = self.eigen(subgraph=self.max_connected_nodes())
+        vals = np.apply_along_axis(lambda x: abs(x), 0, vals)
+        idx = vals.argsort()[::-1]
+        vecs = vecs[idx]
+        renormed_p = vecs[0] / sum(vecs[0])
+        return renormed_p, words
+
     def unload_vector_model(self):
         """
         Unload the word vectors and dictionary. Useful for
@@ -203,3 +290,11 @@ class WordGraph(object):
         :return:
         """
         self.model = None
+
+
+def adj_to_trans(A):
+    """
+    Convert an adjacency matrix into a transition matrix
+    with uniform transition probabilities.
+    """
+    return np.apply_along_axis(lambda i: i * (1 / sum(i)), 1, A.A)
